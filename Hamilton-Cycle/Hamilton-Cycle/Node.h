@@ -12,5 +12,6 @@ public:
 	int  getID() ;
 	int  getTime();
 	std::string getOutput();
+	void setOutput(long id , long time) ;
 };
 

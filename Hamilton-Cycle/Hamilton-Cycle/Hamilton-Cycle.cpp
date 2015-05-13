@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Node.h"
+#include <sstream>
 
 using namespace std ;
 
@@ -10,9 +11,10 @@ using namespace std ;
 int _tmain(int argc, _TCHAR* argv[])
 
 { 
-	int a  = 0;
+    int a = 0;
 	Node node1(1,12) ;
-	string output = node1.getOutput() ; 
+	cout << node1.getOutput() << endl ;
+	cin >> a;
 
 	
 	return 0;

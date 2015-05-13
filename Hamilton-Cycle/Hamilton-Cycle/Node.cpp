@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Node.h"
+#include <sstream>
 
 using namespace std ;
 
@@ -8,6 +9,7 @@ Node::Node(int  id , int time )
 	
 	this->id = id  ;
 	this->time = time;
+	this->setOutput(id,time) ;
 }
 
 
@@ -28,4 +30,11 @@ int Node::getTime()
 std::string Node::getOutput()
 {
 	return this->output ;
+}
+
+void Node::setOutput(long id , long time)
+{
+	stringstream buffer ;
+	buffer << time << id  ;
+	this->output = buffer.str();
 }
