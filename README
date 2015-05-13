@@ -1,1 +1,29 @@
-Test !
+
+#Hamilton-Kreis 
+
+Der Hamilton-Kreis ist ein altes mathematisches Problem. Der Hamilton Kreis ist ein geschlossener Pfad, der jeden Knoten nur einmal enthält. 
+
+###Projektspezifikation 
+In diesem Projekt wird ein Graph ausgelesen und eine entsprechende Aussagenlogischformel generiert, welche die Erfüllbarkeit eines Hamiltonkreis         Problems beschreibt. Diese Aussagenlogische Formel wird dem MiniSat Solvers           übergeben, der die Erfüllbarkeit des Problems errechnet.
+
+### DIMACS-Graph-Format 
+ - Gegeben wird ein Graph im DIMACS-Graph-Format 
+    -  "c" Kommentar
+    -  "p FORMAT NODES EDGES"  Ist die Graphspezifikation 
+    -  "e W V" Ist eine Kantenspezifikation von zwei Knoten
+
+
+### Annahmen 
+    - Jeder Knoten wird nur einmal besucht 
+    - Jede Kante wird nur einmal benutzt 
+    - Anfangsknoten ist der Endknoten (Kreis) 
+
+### To Do 
+    - Spezifikation des Knotennamens 
+    - Spezifikation des Kantennamens 
+    - Einlesen der File 
+    - Erzeugen der Aussagenlogischen Formel 
+    - Rückschreiben in entsprechende File
+    - Aussführen des Minisat-Solvers
+ 
+
