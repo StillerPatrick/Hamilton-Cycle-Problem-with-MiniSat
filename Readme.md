@@ -6,14 +6,6 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 ---
 
-###To Do's
-    -Namensgebung eines Knoten
-    -Namensgebung einer Kante 
-    -Einlesen der Textfile 
-    -Generierung der Formel 
-    -Minisat öffnen
-    -MiniSat starten
-    -MiniSat auslesen 
     
 
 ###Annahmen 
@@ -24,6 +16,16 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 ---
 
+
+###To Do's
+    -Namensgebung eines Knoten
+    -Namensgebung einer Kante 
+    -Einlesen der Textfile 
+    -Generierung der Formel 
+    -Minisat öffnen
+    -MiniSat starten
+    -MiniSat auslesen 
+---
 ###DIMACS FORMAT
     - "c" Kommentar 
     - "p Kanten Knoten" Spezifikation des Problems
