@@ -16,6 +16,12 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 ---
 
+###DIMACS FORMAT
+    - "c" Kommentar 
+    - "p Kanten Knoten" Spezifikation des Problems
+    - "e Knoten Knoten" Spezifkikation einer Kante 
+
+---
 
 ###To Do's
     -Namensgebung eines Knoten
@@ -25,14 +31,6 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
     -Minisat öffnen
     -MiniSat starten
     -MiniSat auslesen 
----
-###DIMACS FORMAT
-    - "c" Kommentar 
-    - "p Kanten Knoten" Spezifikation des Problems
-    - "e Knoten Knoten" Spezifkikation einer Kante 
-
----
-
 
 ###References 
     -Visual Studio 2012 
