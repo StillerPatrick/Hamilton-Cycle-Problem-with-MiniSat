@@ -6,6 +6,16 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 ---
 
+###To Do's
+    -Namensgebung eines Knoten
+    -Namensgebung einer Kante 
+    -Einlesen der Textfile 
+    -Generierung der Formel 
+    -Minisat öffnen
+    -MiniSat starten
+    -MiniSat auslesen 
+    
+
 ###Annahmen 
     - Jeder Knoten wird nur einmal besucht 
     - Jede Kante wird nur einmal benutzt 
@@ -20,6 +30,7 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
     - "e Knoten Knoten" Spezifkikation einer Kante 
 
 ---
+
 
 ###References 
     -Visual Studio 2012 
