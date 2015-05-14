@@ -15,6 +15,11 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 
 ---
+###Knoten 
+    - Zusammgesetzer String aus time + id 
+    
+###Kante 
+    - Implikation  time+id ->time+1+id 
 
 ###DIMACS FORMAT
     - "c" Kommentar 
