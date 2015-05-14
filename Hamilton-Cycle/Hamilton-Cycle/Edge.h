@@ -13,6 +13,7 @@ private :
 	int destinationId ;
 	int destinationTime ;
 	std::string output ;
+	//Summary of 2 Nodes !
 	
 
 };
