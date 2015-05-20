@@ -35,6 +35,6 @@ std::string Node::getOutput()
 void Node::setOutput(long id , long time)
 {
 	stringstream buffer ;
-	buffer << time << id  ;
+	buffer << id << time  ;
 	this->output = buffer.str();
 }
