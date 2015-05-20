@@ -14,6 +14,7 @@ public:
 	std::string getPath() ;
 	int getNumOfNodes();
 	int getNumOfEdges();
+
 	
 
 private: 
