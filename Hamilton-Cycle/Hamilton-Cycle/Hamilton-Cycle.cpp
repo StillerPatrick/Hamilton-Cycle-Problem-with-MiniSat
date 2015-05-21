@@ -26,16 +26,19 @@ void initializeEdges(HandleFile*CurrentFile){
 		string buffer ;
 		
 		buffer = CurrentFile->edges[i] ;
-		cout << buffer << endl ;
 		buffer.erase(0,buffer.find(' ')+1);
 		source = buffer.substr(0,buffer.find(' '));
 		buffer.erase(0,buffer.find(' ')+1);
 		destination = buffer.substr(0,buffer.find(' '));
 		//cout << "."<<source << "." << endl ;
 		//cout << "."<<destination<<"."<< endl;
-		
+		for (int j = 0 ; j < CurrentFile->getNumOfNodes() ; j++){
+			Edge Edge_Buffer(Node(stoi(source),j),Node(stoi(destination),j+1));
+			Edges.push_back(Edge_Buffer);
+		}
 		i++ ;
 	}
+	cout <<" Anzahl der Edges" <<Edges.size() << endl ;
 
 }
 
@@ -50,6 +53,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
 	initializeEdges(&CurrentFile);
+	cout <<" Anzahl der Edges" <<Edges.size() << endl ;
 	cin >> a ;
 	
 	return 0;
