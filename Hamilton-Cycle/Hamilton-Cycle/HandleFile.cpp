@@ -8,6 +8,9 @@ using namespace std ;
 #define GRAPHPROPERTIES 'p' 
 #define EDGE 'e'
 
+HandleFile::HandleFile(void){
+
+}
 HandleFile::HandleFile(string FilePath)
 {
 	int i=0; // runtime variable 

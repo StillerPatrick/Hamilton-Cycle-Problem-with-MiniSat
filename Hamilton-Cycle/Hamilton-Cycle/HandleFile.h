@@ -8,6 +8,7 @@ class HandleFile
 {
 public:
 	HandleFile(std::string Path);
+	HandleFile(void);
 	virtual ~HandleFile(void);
 	std::vector<std::string> lines ;
 	std::vector<std::string> edges ;
