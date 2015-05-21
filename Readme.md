@@ -2,7 +2,7 @@
 
 ###Spezifikation 
 Der Hamiltion Kreis ist ein mathematisches Graphenproblem. Der Hamiltonkreis ist ein geschlossener Pfad in einem Graph, bei dem jeder Knoten nur einmal besucht wird. 
-Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. Diese Problematik in eine aussagenlogische Formel umwandelt und dann die Erfüllbarkeit dieser Formel mit dem MiniSAT Solver errechnet. 
+Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. Diese Problematik in eine aussagenlogische Formel umwandelt und dann die ErfÃ¼llbarkeit dieser Formel mit dem MiniSAT Solver errechnet. 
 
 ---
 
@@ -16,10 +16,10 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 
 ---
 ###Knoten 
-    - Zusammgesetzer String aus time + id 
+    - Zusammgesetzer String aus id + time
     
 ###Kante 
-    - Implikation  time+id ->time+1+id 
+    - Implikation  id + time -> id  + 1time+1
 
 ###DIMACS FORMAT
     - "c" Kommentar 
@@ -29,11 +29,9 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
 ---
 
 ###To Do's
-    -Namensgebung eines Knoten
-    -Namensgebung einer Kante 
-    -Einlesen der Textfile 
+
     -Generierung der Formel 
-    -Minisat öffnen
+    -Minisat Ã¶ffnen
     -MiniSat starten
     -MiniSat auslesen 
 
