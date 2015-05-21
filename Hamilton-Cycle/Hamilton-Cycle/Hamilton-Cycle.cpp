@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Node.h"
+#include "Edge.h"
 #include "HandleFile.h"
 #include <sstream>
 #include <vector>
@@ -13,6 +14,7 @@ using namespace std ;
 
 
 vector<string> lines ;
+vector<Edge> Edges ;
 
 void initializeEdges(HandleFile*CurrentFile){
 	int i = 0 ;  // Runtime Variable 
@@ -22,8 +24,16 @@ void initializeEdges(HandleFile*CurrentFile){
 		string source ;
 		string destination; 
 		string buffer ;
+		
 		buffer = CurrentFile->edges[i] ;
-		cout << buffer <<endl ;
+		cout << buffer << endl ;
+		buffer.erase(0,buffer.find(' ')+1);
+		source = buffer.substr(0,buffer.find(' '));
+		buffer.erase(0,buffer.find(' ')+1);
+		destination = buffer.substr(0,buffer.find(' '));
+		//cout << "."<<source << "." << endl ;
+		//cout << "."<<destination<<"."<< endl;
+		
 		i++ ;
 	}
 

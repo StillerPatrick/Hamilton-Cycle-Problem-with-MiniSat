@@ -12,9 +12,13 @@ Node::Node(int  id , int time )
 	this->setOutput(id,time) ;
 }
 
+Node::Node(void) {
 
+
+}
 Node::~Node(void)
 {
+
 }
 
 int  Node::getID()

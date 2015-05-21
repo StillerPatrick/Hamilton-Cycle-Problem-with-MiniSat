@@ -6,8 +6,10 @@
 using namespace std ;
 
 
-Edge::Edge(void)
+Edge::Edge(Node source , Node destination)
 {
+	this->source = source ;
+	this->destination = destination;
 }
 
 
