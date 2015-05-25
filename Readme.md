@@ -9,8 +9,8 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
     
 
 ###Annahmen 
-    - Jeder Knoten wird nur einmal besucht 
-    - Jede Kante wird nur einmal benutzt 
+    - Jeder Knoten wird nur einmal besucht -> Jede Kante wird nur einmal benutzt
+    - Jedem Zeitpunkt wird nur ein Knoten zugeordnet 
     - Startknoten ist gleich Endknoten (Kreis) 
 
 
@@ -19,7 +19,7 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
     - Zusammgesetzer String aus id + time
     
 ###Kante 
-    - Implikation  id + time -> id  + 1time+1
+    - Implikation  id + time -> id  + time+1
 
 ###DIMACS FORMAT
     - "c" Kommentar 
@@ -39,5 +39,6 @@ Es wird ein Programm entwickelt, welches einen Graph im DIMACS Format einliest. 
     -Visual Studio 2012 
     -GitHub
     -MiniSat
+    -dillinger.io
     
     
