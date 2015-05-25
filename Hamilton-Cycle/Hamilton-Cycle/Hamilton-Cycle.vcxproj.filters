@@ -41,12 +41,6 @@
     <ClCompile Include="Hamilton-Cycle.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="Edge.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="HandleFile.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>

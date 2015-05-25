@@ -14,11 +14,12 @@ using namespace std ;
 
 
 vector<string> lines ;
-vector<Edge> Edges ;
+struct Edge* Edges = NULL;
 
 void initializeEdges(HandleFile*CurrentFile){
 	int i = 0 ;  // Runtime Variable 
-	int t = 0;
+	int numofedges = 0;
+	Edges = (struct Edge*) malloc(sizeof(struct Edge)*CurrentFile->getNumOfEdges() * CurrentFile->getNumOfNodes());
 	while(i < CurrentFile->getNumOfEdges()){
 	// 1st Cut the String
 		string source ;
@@ -33,12 +34,16 @@ void initializeEdges(HandleFile*CurrentFile){
 		//cout << "."<<source << "." << endl ;
 		//cout << "."<<destination<<"."<< endl;
 		for (int j = 0 ; j < CurrentFile->getNumOfNodes() ; j++){
-			Edge Edge_Buffer(Node(stoi(source),j),Node(stoi(destination),j+1));
-			Edges.push_back(Edge_Buffer);
+			Edges[numofedges].sourceID = stoi(source);
+			Edges[numofedges].sourceTime = j ;
+			Edges[numofedges].destinationID = stoi(destination);
+			Edges[numofedges].destinationTime= j+1;
+			numofedges = numofedges + 1;
 		}
 		i++ ;
 	}
-	cout <<" Anzahl der Edges" <<Edges.size() << endl ;
+	
+	cout << numofedges << endl ;
 
 }
 
@@ -48,12 +53,17 @@ int _tmain(int argc, _TCHAR* argv[])
 
 { 
 	int a ;
+	int i = 0 ;
+
 	HandleFile CurrentFile("D:\\Patrick\\Studium\\4.Semester\\Forschungslinie\\Hamilton-Kreis\\graphs\\homer.col");
 	cout << "Filepath" << CurrentFile.getPath() << endl ;
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
 	initializeEdges(&CurrentFile);
-	cout <<" Anzahl der Edges" <<Edges.size() << endl ;
+	for(i=0; i < CurrentFile.getNumOfEdges()*CurrentFile.getNumOfNodes(); i++){
+		cout << Edges[i].sourceID <<Edges[i].sourceTime << endl ;
+		cout << Edges[i].destinationID <<Edges[i].destinationTime << endl ;
+	}
 	cin >> a ;
 	
 	return 0;
