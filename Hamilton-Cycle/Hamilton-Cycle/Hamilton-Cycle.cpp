@@ -15,6 +15,7 @@ using namespace std ;
 
 vector<string> lines ;
 struct Edge* Edges = NULL;
+struct Node* Nodes = NULL;
 
 void initializeEdges(HandleFile*CurrentFile){
 	int i = 0 ;  // Runtime Variable 
@@ -43,10 +44,28 @@ void initializeEdges(HandleFile*CurrentFile){
 		i++ ;
 	}
 	
-	cout << numofedges << endl ;
+	cout <<"Num of initializes Edges :" << numofedges << endl ;
 
 }
 
+void intitializeNodes(HandleFile* CurrentFile){
+	Nodes = (struct Node*) malloc(sizeof(struct Node)*CurrentFile->getNumOfNodes() * (CurrentFile->getNumOfNodes()+1));
+	int count = 0 ;
+	int time = CurrentFile->getNumOfNodes()+1 ;
+	cout << "Time" << time << endl ;
+	// i is the runtime for the node id 
+	// j is the runtime for the node time
+	for(int i = 1; i < CurrentFile->getNumOfNodes()+1 ; i++)
+	{
+		for(int j = 0; j < CurrentFile->getNumOfNodes()+1; j++)
+		{
+			Nodes[count].id = i ;
+			Nodes[count].time = j ;
+			count++ ;
+		}
+	}
+	cout << "Num of initializes Nodes :" << count << endl ;
+}
 
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -60,10 +79,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
 	initializeEdges(&CurrentFile);
+	intitializeNodes(&CurrentFile);
+	/*
 	for(i=0; i < CurrentFile.getNumOfEdges()*CurrentFile.getNumOfNodes(); i++){
 		cout << Edges[i].sourceID <<Edges[i].sourceTime << endl ;
 		cout << Edges[i].destinationID <<Edges[i].destinationTime << endl ;
-	}
+	}*/
 	cin >> a ;
 	
 	return 0;
