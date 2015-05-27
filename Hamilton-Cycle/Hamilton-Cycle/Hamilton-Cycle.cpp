@@ -17,6 +17,12 @@ vector<string> lines ;
 struct Edge* Edges = NULL;
 struct Node* Nodes = NULL;
 
+int CallMiniSat(string inputpath , string outputpath){
+	stringstream systemcall ;
+	systemcall << "MiniSat.exe " << inputpath << " " << outputpath ;
+	int result = system(systemcall.str().c_str());
+	return result ;
+}
 void initializeEdges(HandleFile*CurrentFile){
 	int i = 0 ;  // Runtime Variable 
 	int numofedges = 0;
@@ -71,7 +77,6 @@ void intitializeNodes(HandleFile* CurrentFile){
 int _tmain(int argc, _TCHAR* argv[])
 
 { 
-	int a ;
 	int i = 0 ;
 
 	HandleFile CurrentFile("..\\graphs\\homer.col"); //Change your Path
@@ -85,7 +90,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		cout << Edges[i].sourceID <<Edges[i].sourceTime << endl ;
 		cout << Edges[i].destinationID <<Edges[i].destinationTime << endl ;
 	}*/
-	cin >> a ;
+
+	// 
+	//Example for simple MiniSAT call
+	// "test.in" is a example file 
+	int minisatreturn ;
+	minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
+	cout << "MiniSAt return: " << minisatreturn << endl ;
+	system("PAUSE");
 	
 	return 0;
 }
