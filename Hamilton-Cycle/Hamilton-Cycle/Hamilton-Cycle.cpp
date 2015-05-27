@@ -55,7 +55,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	int a ;
 	int i = 0 ;
 
-	HandleFile CurrentFile("D:\\Patrick\\Studium\\4.Semester\\Forschungslinie\\Hamilton-Kreis\\graphs\\homer.col");
+	HandleFile CurrentFile("..\\graphs\\homer.col"); //Change your Path
 	cout << "Filepath" << CurrentFile.getPath() << endl ;
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
