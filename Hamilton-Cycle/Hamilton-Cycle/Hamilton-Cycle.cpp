@@ -16,6 +16,8 @@ using namespace std ;
 vector<string> lines ;
 struct Edge* Edges = NULL;
 struct Node* Nodes = NULL;
+int n = 0;
+int edge_count = 0;
 
 int CallMiniSat(string inputpath , string outputpath){
 	stringstream systemcall ;
@@ -49,7 +51,8 @@ void initializeEdges(HandleFile*CurrentFile){
 		}
 		i++ ;
 	}
-	
+	edge_count = numofedges;
+
 	cout <<"Num of initializes Edges :" << numofedges << endl ;
 
 }
@@ -71,6 +74,84 @@ void intitializeNodes(HandleFile* CurrentFile){
 		}
 	}
 	cout << "Num of initializes Nodes :" << count << endl ;
+	n = CurrentFile->getNumOfNodes();
+}
+
+void generateCNF() {
+	stringstream alpha;
+	int clause_count = 0;
+	/* Performance optimization:
+		- have constants for n * (n + 1), n + 1 and n * n
+		- make all i, j, k register variables
+		- nest the for-loops
+		- do not access the Nodes array, work with indices directly
+		- use something more efficient than stringstreams
+	  FIRST: verify correctness using smaller graphs
+	*/
+	
+	/* Each node must be visited at least once */
+	alpha << "100" << endl;	/* Node 1 can be visited only at step 0 */
+	alpha << "10" << Nodes[n].time << endl;	/* and at step n */
+	for (int i = n + 1; i < n * (n + 1); i += n + 1) {
+		for (int j = i + 1; j < i + n; j++) {
+			alpha << Nodes[j].id << "0" << Nodes[j].time << " ";
+		}
+		alpha << endl;
+		clause_count++;
+	}
+	
+	/* Each node must be visited only once*/
+	for (int i = 1; i < n; i++) {
+		/* Node 1 cannot be visited at any step other than 0 or n */
+		alpha << "-" << Nodes[i].id << "0" << Nodes[i].time << endl;
+		clause_count++;
+	}
+	for (int i = n + 1; i < n * (n + 1); i += n + 1) {
+		for (int j = i + 1; j < i + n - 1; j++) {
+			for (int k = j + 1; k < i + n; k++) {
+				alpha << "-" << Nodes[j].id << "0" << Nodes[j].time << " -" << Nodes[k].id << "0" << Nodes[k].time << endl;
+				clause_count++;
+			}
+		}
+	}
+
+	/* At each step at least one node must be visited */
+	// The clauses for step 0 and n visiting node 1 already exist
+	for (int i = 1; i < n; i++) {
+		for (int j = (n + 1) + i; j < n * (n + 1); j += n + 1) {
+			alpha << Nodes[j].id << "0" << Nodes[j].time << " ";
+		}
+		alpha << endl;
+		clause_count++;
+	}
+	
+	/* At each step only one node must be visited */
+	for (int i = n + 1; i < n * (n + 1); i += n + 1) {
+		/* Steps 0 and n cannot visit any node other than 1 */
+		alpha << "-" << Nodes[i].id << "0" << Nodes[i].time << endl;
+		alpha << "-" << Nodes[i + n].id << "0" << Nodes[i + n].time << endl;
+		clause_count += 2;
+	}
+	for (int i = 1; i < n; i++) {
+		for (int j = (n + 1) + i; j < n * n; j += n + 1) {
+			for (int k = 2 * (n + 1) + j; k < n * (n + 1); k += n + 1) {
+				alpha << "-" << Nodes[j].id << "0" << Nodes[j].time << " -" << Nodes[k].id << "0" << Nodes[k].time << endl;
+				clause_count++;
+			}
+		}
+	}
+
+	/* Edges */
+	for (int i = 0; i < edge_count; i++) {
+		alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << endl;
+		clause_count++;
+	}
+
+	ofstream file;
+	file.open("cnf");
+	file << "p cnf " << n * (n + 1) << " " << clause_count << endl << alpha.str();
+	file.close();
+	//cout << alpha.str();
 }
 
 
@@ -93,7 +174,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	// 
 	//Example for simple MiniSAT call
-	// "test.in" is a example file 
+	// "test.in" is a example file
+	generateCNF();
 	int minisatreturn ;
 	minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
 	cout << "MiniSAt return: " << minisatreturn << endl ;
