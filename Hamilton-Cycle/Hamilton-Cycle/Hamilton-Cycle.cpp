@@ -21,7 +21,7 @@ int edge_count = 0;
 
 int CallMiniSat(string inputpath , string outputpath){
 	stringstream systemcall ;
-	systemcall << "MiniSat.exe " << inputpath << " " << outputpath ;
+	systemcall << "Minisat.exe " << inputpath << " " << outputpath ;
 	int result = system(systemcall.str().c_str());
 	return result ;
 }
