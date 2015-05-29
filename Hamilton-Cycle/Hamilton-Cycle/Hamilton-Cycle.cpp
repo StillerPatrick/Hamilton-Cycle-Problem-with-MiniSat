@@ -143,9 +143,10 @@ void generateCNF() {
 
 	/* Edges */
 	for (int i = 0; i < edge_count; i++) {
-		alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << endl;
-		clause_count++;
+		alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << " ";
 	}
+	alpha << endl;
+	clause_count++;
 
 	ofstream file;
 	file.open("cnf");
