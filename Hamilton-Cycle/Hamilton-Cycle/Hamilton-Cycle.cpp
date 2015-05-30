@@ -92,6 +92,7 @@ void generateCNF() {
 	/* Each node must be visited at least once */
 	alpha << "100" << endl;	/* Node 1 can be visited only at step 0 */
 	alpha << "10" << Nodes[n].time << endl;	/* and at step n */
+	clause_count += 2;
 	for (int i = n + 1; i < n * (n + 1); i += n + 1) {
 		for (int j = i + 1; j < i + n; j++) {
 			alpha << Nodes[j].id << "0" << Nodes[j].time << " ";
@@ -134,7 +135,7 @@ void generateCNF() {
 	}
 	for (int i = 1; i < n; i++) {
 		for (int j = (n + 1) + i; j < n * n; j += n + 1) {
-			for (int k = 2 * (n + 1) + j; k < n * (n + 1); k += n + 1) {
+			for (int k = (n + 1) + j; k < n * (n + 1); k += n + 1) {
 				alpha << "-" << Nodes[j].id << "0" << Nodes[j].time << " -" << Nodes[k].id << "0" << Nodes[k].time << endl;
 				clause_count++;
 			}
@@ -161,7 +162,7 @@ int _tmain(int argc, _TCHAR* argv[])
 { 
 	int i = 0 ;
 
-	HandleFile CurrentFile("..\\graphs\\homer.col"); //Change your Path
+	HandleFile CurrentFile("..\\..\\graphs\\nstriangle.col"); //Change your Path
 	cout << "Filepath" << CurrentFile.getPath() << endl ;
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
@@ -177,9 +178,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Example for simple MiniSAT call
 	// "test.in" is a example file
 	generateCNF();
-	int minisatreturn ;
-	minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
-	cout << "MiniSAt return: " << minisatreturn << endl ;
+	//int minisatreturn ;
+	//minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
+	//cout << "MiniSAt return: " << minisatreturn << endl ;
 	system("PAUSE");
 	
 	return 0;
