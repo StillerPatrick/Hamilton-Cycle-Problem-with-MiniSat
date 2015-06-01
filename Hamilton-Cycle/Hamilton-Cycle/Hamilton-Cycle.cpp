@@ -143,12 +143,12 @@ void generateCNF() {
 
 	/* Edges */
 	for (int i = 0; i < edge_count; i++) {
-		alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << endl;
+		alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << " ";
 		clause_count++;
 	}
 
 	ofstream file;
-	file.open("cnf");
+	file.open("cnf.in");
 	file << "p cnf " << n * (n + 1) << " " << clause_count << endl << alpha.str();
 	file.close();
 	//cout << alpha.str();
@@ -160,7 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 { 
 	int i = 0 ;
 
-	HandleFile CurrentFile("..\\graphs\\homer.col"); //Change your Path
+	HandleFile CurrentFile("D:\\Patrick\\Studium\\4.Semester\\Forschungslinie\\Hamilton-Kreis\\graphs\\triangle.col"); //Change your Path
 	cout << "Filepath" << CurrentFile.getPath() << endl ;
 	cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
 	cout << "NumberofNodes " << CurrentFile.getNumOfNodes() << endl;
@@ -177,7 +177,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	// "test.in" is a example file
 	generateCNF();
 	int minisatreturn ;
-	minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
+	minisatreturn =CallMiniSat("..\\cnf.in,","..\\test.out");
 	cout << "MiniSAt return: " << minisatreturn << endl ;
 	system("PAUSE");
 	

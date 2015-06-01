@@ -18,6 +18,7 @@ HandleFile::HandleFile(string FilePath)
 	ifstream f ; //file Handle
 	string s ; //BufferString  ;
 	string properties; // PropertieString
+	cout << FilePath << endl ;
 	f.open(FilePath,ios::in);
 	while(!f.eof()){
 		getline(f,s);
