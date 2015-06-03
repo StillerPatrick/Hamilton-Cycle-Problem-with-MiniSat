@@ -20,6 +20,7 @@ struct Edge* Edges = NULL;
 struct Node* Nodes = NULL;
 int n = 0;
 int edge_count = 0;
+vector< vector<struct Edge> > Edges2;
 
 int CallMiniSat(string inputpath , string outputpath){
     stringstream systemcall ;
@@ -57,6 +58,26 @@ void initializeEdges(HandleFile*CurrentFile){
 
     cout <<"Num of initializes Edges :" << numofedges << endl ;
 
+}
+
+void initializeEdges2(HandleFile *CurrentFile) {
+    for (int i = 0; i < CurrentFile->getNumOfNodes(); i++) {
+        Edges2.push_back(vector<struct Edge>());
+    }
+    for (int i = 0; i < CurrentFile->getNumOfEdges(); i++) {
+        string source ;
+        string destination;
+        string buffer ;
+        buffer = CurrentFile->edges[i] ;
+        buffer.erase(0,buffer.find(' ')+1);
+        source = buffer.substr(0,buffer.find(' '));
+        buffer.erase(0,buffer.find(' ')+1);
+        destination = buffer.substr(0,buffer.find(' '));
+        struct Edge cur_edge;
+        cur_edge.sourceID = atoi(source.c_str());
+        cur_edge.destinationID = atoi(destination.c_str());
+        Edges2[atoi(source.c_str()) - 1].push_back(cur_edge);
+    }
 }
 
 void intitializeNodes(HandleFile* CurrentFile){
@@ -145,6 +166,7 @@ void generateCNF() {
     }
 
     /* Edges */
+    /*
     for (int i = 0; i < edge_count; i++) {
         alpha << "-" << Edges[i].sourceID << "0" << Edges[i].sourceTime << " " << Edges[i].destinationID << "0" << Edges[i].destinationTime << " ";
 
@@ -153,6 +175,18 @@ void generateCNF() {
     }
     alpha << " 0" << endl;
     clause_count++;
+    */
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            alpha << "-" << j + 1 << "0" << i << " ";
+            for (unsigned int k = 0; k < Edges2[j].size(); k++) {
+                alpha << Edges2[j][k].destinationID << "0" << i + 1 << " ";
+            }
+            alpha << " 0" << endl;
+            clause_count++;
+        }
+    }
 
     ofstream file;
     file.open("cnf.in");
@@ -170,7 +204,7 @@ int main(int argc, char* argv[])
 
     //HandleFile CurrentFile("D:\\Patrick\\Studium\\4.Semester\\Forschungslinie\\Hamilton-Kreis\\graphs\\triangle.col"); //Change your Path
 
-    HandleFile CurrentFile("../graphs/nstriangle.col"); //Change your Path
+    HandleFile CurrentFile("../graphs/triangle.col"); //Change your Path
 
     cout << "Filepath" << CurrentFile.getPath() << endl ;
     cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
@@ -182,6 +216,7 @@ int main(int argc, char* argv[])
         cout << Edges[i].sourceID <<Edges[i].sourceTime << endl ;
         cout << Edges[i].destinationID <<Edges[i].destinationTime << endl ;
     }*/
+    initializeEdges2(&CurrentFile);
 
     //
     //Example for simple MiniSAT call
