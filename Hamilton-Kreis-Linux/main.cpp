@@ -190,21 +190,20 @@ void generateCNF() {
 
     ofstream file;
     file.open("cnf.in");
-    file << "p cnf " << n * (n + 1) << " " << clause_count << endl << alpha.str();
+    file << "p cnf " << n << "0" << n << " " << clause_count << endl << alpha.str();
     file.close();
     //cout << alpha.str();
 }
 
 
-int main(int argc, char* argv[])
-
-{
-    int i = 0 ;
-
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        return -1;
+    }
 
     //HandleFile CurrentFile("D:\\Patrick\\Studium\\4.Semester\\Forschungslinie\\Hamilton-Kreis\\graphs\\triangle.col"); //Change your Path
 
-    HandleFile CurrentFile("../graphs/triangle.col"); //Change your Path
+    HandleFile CurrentFile(argv[1]); //Change your Path
 
     cout << "Filepath" << CurrentFile.getPath() << endl ;
     cout << "Number of Edges " << CurrentFile.getNumOfEdges() << endl ;
@@ -223,16 +222,9 @@ int main(int argc, char* argv[])
     // "test.in" is a example file
     generateCNF();
 
-    int minisatreturn ;
-    minisatreturn =CallMiniSat("cnf.in","../cnf.out");
-    cout << "MiniSAt return: " << minisatreturn << endl ;
+    int minisatreturn = CallMiniSat("cnf.in","../cnf.out");
+    cout << "MiniSAt return: " << WEXITSTATUS(minisatreturn) << endl ;
 
-    //int minisatreturn ;
-    //minisatreturn =CallMiniSat("..\\test.in","..\\test.out");
-    //cout << "MiniSAt return: " << minisatreturn << endl ;
-
-
-
-    return 0;
+    return WEXITSTATUS(minisatreturn);
 }
 
