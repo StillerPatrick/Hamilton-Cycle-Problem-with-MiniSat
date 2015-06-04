@@ -11,9 +11,8 @@ using namespace std ;
 #define GRAPHPROPERTIES 'p' 
 #define EDGE 'e'
 
-HandleFile::HandleFile(void){
+HandleFile::HandleFile() = default;
 
-}
 HandleFile::HandleFile(string FilePath)
 {
 	int i=0; // runtime variable 
@@ -63,10 +62,7 @@ HandleFile::HandleFile(string FilePath)
     this->NumOfNodes = atoi(Nodes.c_str());
 }
 
-
-HandleFile::~HandleFile(void)
-{
-}
+HandleFile::~HandleFile() = default;
 
 int HandleFile::getNumOfEdges(){
 	return this->NumOfEdges ;

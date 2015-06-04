@@ -4,7 +4,7 @@
 #ifndef H_HANDLEFILE
 #define H_HANDLEFILE 
 #include <vector>
-#include<string>
+#include <string>
 #include <iostream>
 class HandleFile
 {
