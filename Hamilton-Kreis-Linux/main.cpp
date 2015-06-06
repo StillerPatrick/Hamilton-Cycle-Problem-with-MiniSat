@@ -25,7 +25,7 @@ constexpr size_t max_bits = sizeof(int) * 8; // bits in int
 size_t num_bits = 0; // (max bit size of node value) + 1
 
 int edge_count = 0;
-vector< vector<struct Edge> > edges;
+vector< vector<int> > edges;
 
 int CallMiniSat(const string& inputpath, const string& outputpath){
     string systemcall = "minisat " + inputpath + " " + outputpath;
@@ -33,7 +33,7 @@ int CallMiniSat(const string& inputpath, const string& outputpath){
 }
 
 void initializeEdges(HandleFile *CurrentFile) {
-    edges.insert(edges.begin(), CurrentFile->getNumOfEdges(), vector<struct Edge>());
+    edges.insert(edges.begin(), CurrentFile->getNumOfEdges(), vector<int>());
     for (int i = 0; i < CurrentFile->getNumOfEdges(); i++) {
         string source ;
         string destination;
@@ -43,12 +43,9 @@ void initializeEdges(HandleFile *CurrentFile) {
         source = buffer.substr(0,buffer.find(' '));
         buffer.erase(0,buffer.find(' ')+1);
         destination = buffer.substr(0,buffer.find(' '));
-        struct Edge cur_edge;
-        cur_edge.sourceID = atoi(source.c_str());
-        cur_edge.destinationID = atoi(destination.c_str());
-        edges[atoi(source.c_str()) - 1].push_back(cur_edge);
+        edges[atoi(source.c_str()) - 1].push_back(atoi(destination.c_str()));
     }
-    for (const vector<struct Edge> &vec : edges) {
+    for (const vector<int> &vec : edges) {
         if (vec.size() > max_edges) max_edges = vec.size();
     }
 }
@@ -99,7 +96,7 @@ void generateCNF() {
     string alpha;
     int clause_count = 0;
 
-    /* APROXIMATE size of the whole string*/
+    /* APPROXIMATE size of the whole string */
     size_t size = 3 * n             * clause_length(1) +\
                   n * (2 * + n * n) * clause_length(n) +\
                   n * n * n         * clause_length(2) +\
@@ -175,16 +172,24 @@ void generateCNF() {
         for (int j = 0; j < n; j++) {
             alpha += "-";alpha += encode(j + 1, i);alpha += " ";
             for (unsigned int k = 0; k < edges[j].size(); k++) {
-                alpha += encode(edges[j][k].destinationID, i + 1);alpha += " ";
+                alpha += encode(edges[j][k], i + 1);alpha += " ";
             }
             alpha += "0\n";
         }
     }
-
+    /*
     ofstream file;
     file.open("cnf.in");
     file << "p cnf " << encode(n, n) << " " << clause_count << endl << alpha;
     file.close();
+    */
+    string header;
+    header += "p cnf " + encode(n, n) + " " + to_string(clause_count) + "\n";
+    FILE *cnf;
+    cnf = fopen("cnf.in", "w");
+    fwrite(header.c_str(), header.length(), 1, cnf);
+    fwrite(alpha.c_str(), alpha.length(), 1, cnf);
+    fclose(cnf);
 }
 
 
