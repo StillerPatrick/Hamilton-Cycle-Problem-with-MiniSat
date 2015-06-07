@@ -96,22 +96,23 @@ void generateCNF() {
     string alpha;
     int clause_count = 0;
 
-    /* APPROXIMATE size of the whole string */
-    size_t size = 3 * n             * clause_length(1) +\
-                  n * (2 * + n * n) * clause_length(n) +\
-                  n * n * n         * clause_length(2) +\
-                  n * n             * clause_length(max_edges);
-    alpha.reserve(size);
-
     /* Initialise maximum atom length (chars)
        [MINUS][NUMBER][SPACE]
     */
-    max_atom_length = encode(n,n).size() + 2;
+    max_atom_length = encode(n,n).length() + 2;
 
     /* Initialises number of bits a node value can hold at max */
     for (num_bits = 0; num_bits < max_bits; num_bits++) {
         if ((n >> num_bits) == 0) break;
     }
+
+    /* APPROXIMATE size of the whole string */
+    size_t size = 3 * n             * clause_length(1) +\
+                  2 * n * n * n     * clause_length(2) +\
+                  n                 * clause_length(n) +\
+                  n * n             * clause_length(max_edges + 1);
+    alpha.reserve(size);
+
 
     /* Each node must be visited at least once */
     alpha += encode(1, 0);alpha += " 0\n"; /* Node 1 can be visited only at step 0 */
@@ -177,12 +178,9 @@ void generateCNF() {
             alpha += "0\n";
         }
     }
-    /*
-    ofstream file;
-    file.open("cnf.in");
-    file << "p cnf " << encode(n, n) << " " << clause_count << endl << alpha;
-    file.close();
-    */
+
+
+    /* Write full problem specification to "cnf.in" */
     string header;
     header += "p cnf " + encode(n, n) + " " + to_string(clause_count) + "\n";
     FILE *cnf;
@@ -198,7 +196,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    HandleFile CurrentFile(argv[1]); //Change your Path */
+    HandleFile CurrentFile(argv[1]); /* Change your Path */
 
     cout << "Filepath: " << CurrentFile.getPath() << endl;
     cout << "Number of Edges: " << CurrentFile.getNumOfEdges() << endl;
@@ -207,8 +205,8 @@ int main(int argc, char* argv[]) {
     initializeEdges(&CurrentFile);
 
     //
-    //Example for simple MiniSAT call
-    // "test.in" is a example file
+    // Example for simple MiniSAT call
+    // "test.col" is a example file
     cout << "Generating CNF ... ";
     cout.flush();
     generateCNF();
