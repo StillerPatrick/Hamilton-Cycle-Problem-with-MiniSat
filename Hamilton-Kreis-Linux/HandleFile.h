@@ -6,23 +6,19 @@
 #include <vector>
 #include <string>
 #include <iostream>
-class HandleFile
-{
+class HandleFile {
 public:
-	HandleFile(std::string Path);
+    HandleFile(const std::string& Path);
 	std::vector<std::string> lines ;
 	std::vector<std::string> edges ;
 	std::string getPath() ;
-	int getNumOfNodes();
-	int getNumOfEdges();
-
-	
+    unsigned int getNumOfNodes();
+    unsigned int getNumOfEdges();
 
 private: 
-	int NumOfNodes;
-	int NumOfEdges;
-	std::string Path ;
-
+    unsigned int NumOfNodes;
+    unsigned int NumOfEdges;
+    std::string Path;
 };
 
 #endif 

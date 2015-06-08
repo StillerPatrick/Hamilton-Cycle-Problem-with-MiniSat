@@ -3,10 +3,8 @@
 #define NODE_H
 
 struct Node {
-	int id ;
-	int time ;
-}Node;
-
+    unsigned int id;
+    unsigned int time;
+};
 
 #endif
-

@@ -11,7 +11,6 @@ OTHER_FILES += \
     Hamilton-Kreis-Linux.pro.user
 
 HEADERS += \
-    Edge.h \
     HandleFile.h \
     Node.h
 

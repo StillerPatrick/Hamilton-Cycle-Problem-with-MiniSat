@@ -3,57 +3,51 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
 
 using namespace std ;
 
 constexpr char GRAPHPROPERTIES = 'p';
 constexpr char EDGE = 'e';
 
-HandleFile::HandleFile(string FilePath)
-{
-    ifstream f; // file handle
-    string s; // buffer string
+HandleFile::HandleFile(const string& FilePath) : Path{FilePath} {
+    ifstream f(FilePath, std::ifstream::in); // file handle
     string properties; // propertie string
+    string line; // buffer string
 
-    f.open(FilePath.c_str());
-	while(!f.eof()){
-		getline(f,s);
-		this->lines.push_back(s);
-	}
-	f.close();
-	this->Path = FilePath ;
-	//READFILE
-	
-    for (unsigned int i = 0; i < lines.size(); i++) {
-        switch (lines[i][0]) {
-            case GRAPHPROPERTIES    :   properties = lines[i];
-            case EDGE               :   edges.push_back(lines[i]);
+    /* read lines from file to 'lines' */
+    while(f.good()){
+        switch (f.peek()) {
+            case GRAPHPROPERTIES    :   getline(f, line); properties = line; break;
+            case EDGE               :   getline(f, line); edges.push_back(line); break;
         }
 	}
 
-    cout << "Propertie line: '" << properties << '\'' << endl ;
+	f.close();
 
-    this->NumOfEdges = (int) edges.size() ;
+    cout << "c Propertie line: '" << properties << '\'' << endl;
 
-    // cut the properties
-    string cut =  properties.erase(0,properties.find(' ')+1);
-	cut = properties.erase(0,properties.find(' ')+1);
-	string Nodes = cut.substr(0,properties.find(' '));
-	cut = cut.erase(0,properties.find(' ')+1);
-	string EdgesS = cut.substr(0,properties.find(' ')+1);
+    this->NumOfEdges = edges.size();
 
-    if (atoi(EdgesS.c_str()) != this->NumOfEdges){
-        cout << "Datei wurde nicht richtig gelesen" << endl;
+    /* cut the properties */
+    istringstream prop(properties);
+    prop.ignore(7); // ignore "p edges"
+    unsigned int num_nodes;
+    unsigned int num_edges;
+    prop >> std::skipws >> num_nodes;
+    prop >> std::skipws >> num_edges;
+    if (num_edges != this->NumOfEdges){
+        cerr << "Datei wurde nicht richtig gelesen" << endl;
 	}
 	
-    this->NumOfNodes = atoi(Nodes.c_str());
+    this->NumOfNodes = num_nodes;
 }
 
-int HandleFile::getNumOfEdges(){
+unsigned int HandleFile::getNumOfEdges(){
     return this->NumOfEdges;
 }
 
-int HandleFile::getNumOfNodes(){
+unsigned int HandleFile::getNumOfNodes(){
     return this->NumOfNodes;
 }
 
