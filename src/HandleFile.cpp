@@ -20,6 +20,7 @@ HandleFile::HandleFile(const string& FilePath) : Path{FilePath} {
         switch (f.peek()) {
             case GRAPHPROPERTIES    :   getline(f, line); properties = line; break;
             case EDGE               :   getline(f, line); edges.push_back(line); break;
+            default                 :   getline(f, line);
         }
 	}
 
