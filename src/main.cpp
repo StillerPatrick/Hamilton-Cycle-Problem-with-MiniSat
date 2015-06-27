@@ -1,5 +1,3 @@
-#include "Node.h"
-#include "HandleFile.h"
 #include <vector>
 #include <stdlib.h>
 #include <fstream>
@@ -9,218 +7,264 @@
 #include <utility>
 #include <limits>
 #include <sstream>
+#include "minisat/core/SolverTypes.h"
+#include "minisat/simp/SimpSolver.h"
 
+using namespace Minisat;
 using namespace std;
 
-vector<struct Node> nodes;
-unsigned int n = 0; // number of nodes
+enum {
+    EDGE = 'e',
+    PROPERTY = 'p'
+};
 
-size_t max_edges = 0; // maximum amount of edges from one node
-size_t max_atom_length = 0; // maximum length of an atom (chars)
+vector<vector<int>> edges;
+unsigned int num_nodes = 0;
+unsigned int num_edges = 0;
 constexpr size_t max_bits = sizeof(int) * 8; // bits in int
 size_t num_bits = 0; // (max bit size of node value) + 1
 
-vector<vector<int>> edges;
-
-/* Start miniSAT with apropriate parameters */
-int CallMiniSat(const string& inputpath, const string& outputpath){
-    string systemcall = "minisat " + inputpath + " " + outputpath;
-    return system(systemcall.c_str());
+string parseProperties(string property_line) {
+    istringstream properties(property_line);
+    properties.ignore(7);     /* ignore "p edges" */
+    properties >> std::skipws >> num_nodes;
+    properties >> std::skipws >> num_edges;
+    return property_line;
 }
 
-/* initialise global variables 'edges' & 'max_edges' */
-void initialiseEdges(HandleFile& CurrentFile) {
-    edges.insert(edges.begin(), CurrentFile.getNumOfEdges(), vector<int>());
-
-    /* read from line to 'edges' */
-    for (unsigned int i = 0; i < CurrentFile.getNumOfEdges(); i++) {
-        unsigned int source;
-        unsigned int destination;
-        istringstream edge_line(CurrentFile.edges[i]);
-        edge_line.ignore(); // ignore 'e'
-        edge_line >> skipws >> source;
-        edge_line >> skipws >> destination;
-        edges[source - 1].push_back(destination);
+void parseEdge(string edge_line) {
+    static bool uninitialized = true;
+    if (uninitialized) {
+        edges.insert(edges.begin(), num_edges, vector<int>());
+        uninitialized = false;
     }
-    /* get maximum amount of edges from one node */
-    for (const vector<int> &vec : edges) {
-        if (vec.size() > max_edges) max_edges = vec.size();
+    unsigned int source;
+    unsigned int destination;
+    istringstream edge(edge_line);
+    edge.ignore();      /* ignore leading 'e' */
+    edge >> skipws >> source;
+    edge >> skipws >> destination;
+    edges[source - 1].push_back(destination);
+#if 0
+    if (edges[source - 1].size() > max_degree) {
+        max_degree = edges[source - 1].size();
     }
+#endif
 }
 
-/* initialise global variable 'nodes' */
-void initialiseNodes(HandleFile& CurrentFile) {
-    n = CurrentFile.getNumOfNodes();
-    nodes.reserve(n * (n + 1));
+void parseDIMACSGraph(char *path) {
+    ifstream file(path, std::ifstream::in); // file handle
+#if 0
+    cout << "Parsing graph '" << path << "' ..."; cout.flush();
+#endif
 
-    unsigned count = 0;
-    for (unsigned int i = 1; i < n + 1; i++) {
-        for (unsigned int j = 0; j < n + 1; j++, count++) {
-            nodes[count] = {i, j};
+    string properties; // property string
+    string line; // buffer string
+    /* read lines from file to 'lines' */
+    while (file.good()) {
+        getline(file, line);
+        switch (line.front()) {
+            case PROPERTY:
+            if (properties.empty()) {
+                properties = parseProperties(line);
+            }
+            break;
+            case EDGE:
+            parseEdge(line); break;
         }
-    }
+	}
 
-    cout << "c Number of initialised nodes: " << count << endl ;
+	file.close();
+#if 0
+    cout << " Done" << endl;
+    cout << "Property line: '" << properties << '\'' << endl;
+    cout << "Number of nodes: " << num_nodes << endl;
+    cout << "Number of edges: " << num_edges << endl;
+#endif
 }
 
 /* encodes a node and a time value to a MiniSAT Value */
-inline string encode(int node, int time) {
-    return to_string((time << num_bits) | node);
+int encode(int node, int time) {
+    return (time << num_bits) | node - 1;
 }
 
 /* decodes a value from MiniSAT
  * returns a (node, time)-pair
  */
-inline std::pair<int, int> decode(int dec_val) {
+std::pair<int, int> decode(int dec_val) {
     return {dec_val & ~(~0 << num_bits), dec_val >> num_bits};
 }
 
-/* returns maximum length of a clause */
-inline size_t clause_length(size_t atoms) {
-    return atoms * max_atom_length + 2 /* "0\n" */;
+void print_clause(vec<Lit> &clause) {
+    for (int i = 0; i < clause.size(); i++) {
+        cout << (sign(clause[i]) ? "-" : "");
+        cout << ((var(clause[i]))) << " ";
+    }
+    cout << "0" << endl;
 }
 
-/* Performance optimization:
- *   - nest the for-loops
- *   - do not access the nodes array, work with indices directly
- */
-void generateCNF() {
-    string alpha;
-    int clause_count = 0;
-
-    /* Initialise maximum atom length (chars)
-     * [MINUS][NUMBER][SPACE]
-     */
-    max_atom_length = encode(n,n).length() + 2;
-
-    /* Initialises number of bits a node value can hold at max */
-    for (num_bits = 0; num_bits < max_bits; num_bits++) {
-        if ((n >> num_bits) == 0) break;
-    }
-
-    /* APPROXIMATE size of the whole string */
-    size_t size = 3 * n             * clause_length(1) +\
-                  2 * n * n * n     * clause_length(2) +\
-                  n                 * clause_length(n) +\
-                  n * n             * clause_length(max_edges + 1);
-    alpha.reserve(size);
-
-    /* Each node must be visited at least once */
-    alpha += encode(1, 0);alpha += " 0\n"; /* Node 1 can be visited only at step 0 */
-    alpha += encode(1, nodes[n].time);alpha += " 0\n";	/* and at step n */
-    clause_count += n + 1;
-    for (unsigned int i = n + 1; i < n * (n + 1); i += n + 1) {
-        for (unsigned int j = i + 1; j < i + n; j++) {
-            alpha += encode(nodes[j].id, nodes[j].time);alpha += " ";
-        }
-        alpha += " 0\n";
-    }
-
-    /* Each node must be visited only once*/
-    clause_count += n - 1;
-    for (unsigned int i = 1; i < n; i++) {
-        /* Node 1 cannot be visited at any step other than 0 or n */
-        alpha += "-";alpha += encode(nodes[i].id, nodes[i].time);alpha += " 0\n";
-    }
-    for (unsigned int i = n + 1; i < n * (n + 1); i += n + 1) {
-        for (unsigned int j = i + 1; j < i + n - 1; j++) {
-            for (unsigned int k = j + 1; k < i + n; k++) {
-                alpha += "-";alpha += encode(nodes[j].id, nodes[j].time);alpha += " -";alpha += encode(nodes[k].id, nodes[k].time);alpha += " 0\n";
-                clause_count++;
-            }
-        }
-    }
-
-    /* At each step at least one node must be visited
-     * The clauses for step 0 and n visiting node 1 already exist
-     */
-    clause_count += n - 1;
-    for (unsigned int i = 1; i < n; i++) {
-        for (unsigned int j = (n + 1) + i; j < n * (n + 1); j += n + 1) {
-            alpha += encode(nodes[j].id, nodes[j].time);alpha += " ";
-        }
-        alpha += " 0\n";
-    }
-
-    /* At each step only one node must be visited */
-    clause_count += 2 * (n - 1);
-    for (unsigned int i = n + 1; i < n * (n + 1); i += n + 1) {
-        /* Steps 0 and n cannot visit any node other than 1 */
-        alpha += "-";alpha += encode(nodes[i].id, nodes[i].time);alpha += " 0\n";
-        alpha += "-";alpha += encode(nodes[i + n].id, nodes[i + n].time);alpha += " 0\n";
-    }
-    for (unsigned int i = 1; i < n; i++) {
-        for (unsigned int j = (n + 1) + i; j < n * n; j += n + 1) {
-            for (unsigned int k = (n + 1) + j; k < n * (n + 1); k += n + 1) {
-                alpha += "-";alpha += encode(nodes[j].id, nodes[j].time);alpha += " -";alpha += encode(nodes[k].id, nodes[k].time);alpha += " 0\n";
-                clause_count++;
-            }
-        }
-    }
-
-    /* All exisiting edges at any time */
-    clause_count += n * n;
-    for (unsigned int i = 0; i < n; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            alpha += "-";alpha += encode(j + 1, i);alpha += " ";
-            for (unsigned int k = 0; k < edges[j].size(); k++) {
-                alpha += encode(edges[j][k], i + 1);alpha += " ";
-            }
-            alpha += "0\n";
-        }
-    }
-
-
-    /* Write full problem specification to "cnf.in" */
-    string header;
-    header += "p cnf " + encode(n, n) + " " + to_string(clause_count) + "\n";
-    FILE *cnf;
-    cnf = fopen("cnf.in", "w");
-    fwrite(header.c_str(), header.length(), 1, cnf);
-    fwrite(alpha.c_str(), alpha.length(), 1, cnf);
-    fclose(cnf);
+void print_clause(Lit lit) {
+    cout << (sign(lit) ? "-" : "");
+    cout << ((var(lit))) << " 0" << endl;
 }
 
-/* start point of console application */
+void print_clause(Lit lita, Lit litb) {
+    vec<Lit> clause;
+    clause.push(lita);
+    clause.push(litb);
+    print_clause(clause);
+}
+
+void generateCNF(SimpSolver &solver) {
+#if 0
+    cout << "Generating CNF ..."; cout.flush();
+#endif
+
+    /* Visit each node at least once */
+    solver.addClause(mkLit(encode(1, 0), false));
+#if 0
+    print_clause(mkLit(encode(1, 0), false));
+#endif
+    solver.addClause(mkLit(encode(1, num_nodes), false));
+#if 0
+    print_clause(mkLit(encode(1, num_nodes), false));
+#endif
+    for (int i = 2; i <= num_nodes; i++) {
+        vec<Lit> clause;
+        for (int j = 1; j < num_nodes; j++) {
+            clause.push(mkLit(encode(i, j), false));
+        }
+        solver.addClause(clause);
+#if 0
+        print_clause(clause);
+#endif
+    }
+
+    /* Visit each node at most once */
+    for (int i = 1; i < num_nodes; i++) {
+        solver.addClause(mkLit(encode(1, i), true));
+#if 0
+        print_clause(mkLit(encode(1, i), true));
+#endif
+    }
+    for (int i = 2; i <= num_nodes; i++) {
+        for (int j = 1; j < num_nodes - 1; j++) {
+            for (int k = j + 1; k < num_nodes; k++) {
+                solver.addClause(
+                        mkLit(encode(i, j), true),
+                        mkLit(encode(i, k), true)
+                        );
+#if 0
+                print_clause(
+                        mkLit(encode(i, j), true),
+                        mkLit(encode(i, k), true)
+                        );
+#endif
+            }
+        }
+    }
+
+    /* Visit at least one node at each step */
+    for (int i = 1; i < num_nodes; i++) {
+        vec<Lit> clause;
+        for (int j = 2; j <= num_nodes; j++) {
+            clause.push(mkLit(encode(j, i), false));
+        }
+        solver.addClause(clause);
+#if 0
+        print_clause(clause);
+#endif
+    }
+
+    /* Visit at most one node at each step */
+    for (int i = 2; i <= num_nodes; i++) {
+        solver.addClause(mkLit(encode(i, 0), true));
+#if 0
+        print_clause(mkLit(encode(i, 0), true));
+#endif
+        solver.addClause(mkLit(encode(i, num_nodes), true));
+#if 0
+        print_clause(mkLit(encode(i, num_nodes), true));
+#endif
+    }
+    for (int i = 1; i < num_nodes; i++) {
+        for (int j = 2; j < num_nodes; j++) {
+            for (int k = j + 1; k <= num_nodes; k++) {
+                solver.addClause(
+                        mkLit(encode(j, i), true),
+                        mkLit(encode(k, i), true)
+                        );
+#if 0
+                print_clause(
+                        mkLit(encode(j, i), true),
+                        mkLit(encode(k, i), true)
+                        );
+#endif
+            }
+        }
+    }
+
+    /* Successors of each node at each step depending on edges */
+    for (int i = 1; i <= num_nodes; i++) {
+        for (int j = 0; j < num_nodes; j++) {
+            vec<Lit> clause;
+            clause.push(mkLit(encode(i, j), true));
+            for (int k = 0; k < edges[i - 1].size(); k++) {
+                clause.push(mkLit(encode(edges[i - 1][k], j + 1), false));
+            }
+            solver.addClause(clause);
+#if 0
+            print_clause(clause);
+#endif
+        }
+    }
+#if 0
+    cout << " Done" << endl;
+#endif
+}
+
 int main(int argc, char* argv[]) {
+    SimpSolver solver;
+
     if (argc != 2) {
         return -1;
     }
+    parseDIMACSGraph(argv[1]);
 
-    HandleFile CurrentFile(argv[1]); /* Change your Path */
-
-    cout << "c Filepath: " << CurrentFile.getPath() << endl;
-    cout << "c Number of edges: " << CurrentFile.getNumOfEdges() << endl;
-    cout << "c Number of nodes: " << CurrentFile.getNumOfNodes() << endl;
-    initialiseNodes(CurrentFile);
-    initialiseEdges(CurrentFile);
-
-    /* Example for simple MiniSAT call
-     * "test.col" is a example file
-     */
-    cout << "c Generating CNF ... "; cout.flush();
-    generateCNF();
-    cout << "Done" << endl;
-
-    int minisatreturn = CallMiniSat("cnf.in","../cnf.out");
-    if (WEXITSTATUS(minisatreturn) == 10) {
-        cout << "c Solution:" << endl;
-        ifstream out("../cnf.out", std::ifstream::in);
-        out.ignore(numeric_limits<streamsize>::max(),'\n'); // skip "SAT" line
-        int x;
-        out >> x;
-        out.ignore();
-        while(out.good()) {
-            if (x > 0) {
-                std::pair<int,int> node_time;
-                node_time = decode(x);
-                cout << "c Value: " << x << " Node: " << node_time.first << " Time: " << node_time.second << endl;
-            }
-            out >> x;
-            out.ignore();
-        }
-        out.close();
+    /* Get maximum number of bits for variable encoding */
+    for (num_bits = 0; num_bits < max_bits; num_bits++) {
+        if ((num_nodes >> num_bits) == 0) break;
     }
 
-    return WEXITSTATUS(minisatreturn);
+    /* Pass the number of variables to minisat */
+    for (int max_var = encode(num_nodes, num_nodes) + 1;
+            solver.nVars() < max_var;
+            solver.newVar())
+        ; /* PASS */
+
+    generateCNF(solver);
+
+    solver.eliminate(true);         /* Performance test later */
+    vec<Lit> dummy;
+    lbool result = l_Undef;
+    result = solver.solveLimited(dummy);
+
+    if (result == l_True) {
+        cout << "s SATISFIABLE" << endl << "v ";
+        for (int i = 0; i < solver.nVars(); i++) {
+#if 0
+            if (solver.model[i] != l_Undef)
+                cout << (solver.model[i]==l_True?"":"-") << i << "|";
+#endif
+            if (solver.model[i] == l_True && std::get<0>(decode(i + 1)) != 1) {
+                cout << std::get<0>(decode(i + 1)) << " ";
+            }
+        }
+        cout << "1 0" << endl;
+        exit(10);
+    } else if (result == l_False) {
+        cout << "s UNSATISFIABLE" << endl;
+        exit(20);
+    }
+    return 0;
 }
