@@ -45,22 +45,12 @@ void parseEdge(string edge_line) {
     edge >> skipws >> source;
     edge >> skipws >> destination;
     edges[source - 1].push_back(destination);
-#if 0
-    if (edges[source - 1].size() > max_degree) {
-        max_degree = edges[source - 1].size();
-    }
-#endif
 }
 
 void parseDIMACSGraph(char *path) {
     ifstream file(path, std::ifstream::in); // file handle
-#if 0
-    cout << "Parsing graph '" << path << "' ..."; cout.flush();
-#endif
-
     string properties; // property string
     string line; // buffer string
-    /* read lines from file to 'lines' */
     while (file.good()) {
         getline(file, line);
         switch (line.front()) {
@@ -73,14 +63,7 @@ void parseDIMACSGraph(char *path) {
             parseEdge(line); break;
         }
 	}
-
 	file.close();
-#if 0
-    cout << " Done" << endl;
-    cout << "Property line: '" << properties << '\'' << endl;
-    cout << "Number of nodes: " << num_nodes << endl;
-    cout << "Number of edges: " << num_edges << endl;
-#endif
 }
 
 /* encodes a node and a time value to a MiniSAT Value */
@@ -95,111 +78,68 @@ std::pair<int, int> decode(int dec_val) {
     return {dec_val & ~(~0 << num_bits), dec_val >> num_bits};
 }
 
-void print_clause(vec<Lit> &clause) {
-    for (int i = 0; i < clause.size(); i++) {
-        cout << (sign(clause[i]) ? "-" : "");
-        cout << ((var(clause[i]))) << " ";
-    }
-    cout << "0" << endl;
-}
-
-void print_clause(Lit lit) {
-    cout << (sign(lit) ? "-" : "");
-    cout << ((var(lit))) << " 0" << endl;
-}
-
-void print_clause(Lit lita, Lit litb) {
-    vec<Lit> clause;
-    clause.push(lita);
-    clause.push(litb);
-    print_clause(clause);
-}
-
 void generateCNF(SimpSolver &solver) {
-#if 0
-    cout << "Generating CNF ..."; cout.flush();
-#endif
+    vec<Lit> n_clause;
+    vec<Lit> one_clause;
+    vec<Lit> two_clause;
 
     /* Visit each node at least once */
-    solver.addClause(mkLit(encode(1, 0), false));
-#if 0
-    print_clause(mkLit(encode(1, 0), false));
-#endif
-    solver.addClause(mkLit(encode(1, num_nodes), false));
-#if 0
-    print_clause(mkLit(encode(1, num_nodes), false));
-#endif
+    one_clause.push(mkLit(encode(1, 0)));
+    solver.addClause_(one_clause);
+    one_clause.clear();
+    one_clause.push(mkLit(encode(1, num_nodes)));
+    solver.addClause_(one_clause);
+    one_clause.clear();
     for (int i = 2; i <= num_nodes; i++) {
-        vec<Lit> clause;
         for (int j = 1; j < num_nodes; j++) {
-            clause.push(mkLit(encode(i, j), false));
+            n_clause.push(mkLit(encode(i, j)));
         }
-        solver.addClause(clause);
-#if 0
-        print_clause(clause);
-#endif
+        solver.addClause_(n_clause);
+        n_clause.clear();
     }
 
     /* Visit each node at most once */
     for (int i = 1; i < num_nodes; i++) {
-        solver.addClause(mkLit(encode(1, i), true));
-#if 0
-        print_clause(mkLit(encode(1, i), true));
-#endif
+        one_clause.push(~mkLit(encode(1, i)));
+        solver.addClause_(one_clause);
+        one_clause.clear();
     }
     for (int i = 2; i <= num_nodes; i++) {
         for (int j = 1; j < num_nodes - 1; j++) {
             for (int k = j + 1; k < num_nodes; k++) {
-                solver.addClause(
-                        mkLit(encode(i, j), true),
-                        mkLit(encode(i, k), true)
-                        );
-#if 0
-                print_clause(
-                        mkLit(encode(i, j), true),
-                        mkLit(encode(i, k), true)
-                        );
-#endif
+                two_clause.push(~mkLit(encode(i, j)));
+                two_clause.push(~mkLit(encode(i, k)));
+                solver.addClause_(two_clause);
+                two_clause.clear();
             }
         }
     }
 
     /* Visit at least one node at each step */
     for (int i = 1; i < num_nodes; i++) {
-        vec<Lit> clause;
         for (int j = 2; j <= num_nodes; j++) {
-            clause.push(mkLit(encode(j, i), false));
+            n_clause.push(mkLit(encode(j, i)));
         }
-        solver.addClause(clause);
-#if 0
-        print_clause(clause);
-#endif
+        solver.addClause_(n_clause);
+        n_clause.clear();
     }
 
     /* Visit at most one node at each step */
     for (int i = 2; i <= num_nodes; i++) {
-        solver.addClause(mkLit(encode(i, 0), true));
-#if 0
-        print_clause(mkLit(encode(i, 0), true));
-#endif
-        solver.addClause(mkLit(encode(i, num_nodes), true));
-#if 0
-        print_clause(mkLit(encode(i, num_nodes), true));
-#endif
+        one_clause.push(~mkLit(encode(i, 0)));
+        solver.addClause_(one_clause);
+        one_clause.clear();
+        one_clause.push(~mkLit(encode(i, num_nodes)));
+        solver.addClause_(one_clause);
+        one_clause.clear();
     }
     for (int i = 1; i < num_nodes; i++) {
         for (int j = 2; j < num_nodes; j++) {
             for (int k = j + 1; k <= num_nodes; k++) {
-                solver.addClause(
-                        mkLit(encode(j, i), true),
-                        mkLit(encode(k, i), true)
-                        );
-#if 0
-                print_clause(
-                        mkLit(encode(j, i), true),
-                        mkLit(encode(k, i), true)
-                        );
-#endif
+                two_clause.push(~mkLit(encode(j, i)));
+                two_clause.push(~mkLit(encode(k, i)));
+                solver.addClause_(two_clause);
+                two_clause.clear();
             }
         }
     }
@@ -207,20 +147,14 @@ void generateCNF(SimpSolver &solver) {
     /* Successors of each node at each step depending on edges */
     for (int i = 1; i <= num_nodes; i++) {
         for (int j = 0; j < num_nodes; j++) {
-            vec<Lit> clause;
-            clause.push(mkLit(encode(i, j), true));
+            n_clause.push(~mkLit(encode(i, j)));
             for (int k = 0; k < edges[i - 1].size(); k++) {
-                clause.push(mkLit(encode(edges[i - 1][k], j + 1), false));
+                n_clause.push(mkLit(encode(edges[i - 1][k], j + 1)));
             }
-            solver.addClause(clause);
-#if 0
-            print_clause(clause);
-#endif
+            solver.addClause_(n_clause);
+            n_clause.clear();
         }
     }
-#if 0
-    cout << " Done" << endl;
-#endif
 }
 
 int main(int argc, char* argv[]) {
@@ -252,15 +186,11 @@ int main(int argc, char* argv[]) {
     if (result == l_True) {
         cout << "s SATISFIABLE" << endl << "v ";
         for (int i = 0; i < solver.nVars(); i++) {
-#if 0
-            if (solver.model[i] != l_Undef)
-                cout << (solver.model[i]==l_True?"":"-") << i << "|";
-#endif
             if (solver.model[i] == l_True && std::get<0>(decode(i + 1)) != 1) {
                 cout << std::get<0>(decode(i + 1)) << " ";
             }
         }
-        cout << "1 0" << endl;
+        cout << "1" << endl;
         exit(10);
     } else if (result == l_False) {
         cout << "s UNSATISFIABLE" << endl;

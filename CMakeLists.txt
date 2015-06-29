@@ -6,10 +6,10 @@ set(MINISAT_DIR
     "/home/richard/Projekte/Hamilton-Kreis/minisat"
 )
 set(EXECUTABLE_OUTPUT_PATH build)
+set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O3")
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 include_directories("minisat")
-
-add_definitions(-std=c++11)
 
 # For YouCompleteMe autocompleter
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
