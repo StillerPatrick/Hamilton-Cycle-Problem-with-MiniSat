@@ -215,6 +215,7 @@ int main(int argc, char* argv[]) {
     start = rdtsc_pre();
     /* TODO check if simplifying is worth it */
     if (!solver.simplify()) {
+        cerr << "Call of minisat: " << rdtsc_post() - start << endl;
         cout << "s UNSATISFIABLE" << endl;
         exit(20);
     }
