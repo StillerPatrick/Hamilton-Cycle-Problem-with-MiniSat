@@ -8,7 +8,7 @@
 #include <limits>
 #include <sstream>
 #include "minisat/core/SolverTypes.h"
-#include "minisat/simp/SimpSolver.h"
+#include "minisat/core/Solver.h"
 
 using namespace Minisat;
 using namespace std;
@@ -24,7 +24,37 @@ unsigned int num_edges = 0;
 constexpr size_t max_bits = sizeof(int) * 8; // bits in int
 size_t num_bits = 0; // (max bit size of node value) + 1
 
-string parseProperties(string property_line) {
+/* FUNCTIONS TO MEASURE PERFORMANCE */
+
+uint64_t rdtsc_pre() {
+    uint64_t hi, lo;
+    asm volatile(
+            "cpuid; rdtsc;"
+            "mov %%rdx, %0;"
+            "mov %%rax, %1;"
+            : "=r"(hi), "=r"(lo)
+            :
+            : "rax", "rbx", "rcx", "rdx");
+    return (hi << 32) | lo;
+}
+
+uint64_t rdtsc_post() {
+    uint64_t hi, lo;
+    asm volatile(
+            "rdtscp;"
+            "mov %%rdx, %0;"
+            "mov %%rax, %1;"
+            "cpuid;"
+            : "=r"(hi), "=r"(lo)
+            :
+            : "rax", "rbx", "rcx", "rdx");
+    return (hi << 32) | lo;
+}
+
+
+/* ACTUAL HELPER FUNCTIONS */
+
+string parseProperties(string const &property_line) {
     istringstream properties(property_line);
     properties.ignore(7);     /* ignore "p edges" */
     properties >> std::skipws >> num_nodes;
@@ -32,7 +62,7 @@ string parseProperties(string property_line) {
     return property_line;
 }
 
-void parseEdge(string edge_line) {
+void parseEdge(string const &edge_line) {
     static bool uninitialized = true;
     if (uninitialized) {
         edges.insert(edges.begin(), num_edges, vector<int>());
@@ -78,7 +108,7 @@ std::pair<int, int> decode(int dec_val) {
     return {dec_val & ~(~0 << num_bits), dec_val >> num_bits};
 }
 
-void generateCNF(SimpSolver &solver) {
+void generateCNF(Solver &solver) {
     vec<Lit> n_clause;
     vec<Lit> one_clause;
     vec<Lit> two_clause;
@@ -158,7 +188,8 @@ void generateCNF(SimpSolver &solver) {
 }
 
 int main(int argc, char* argv[]) {
-    SimpSolver solver;
+    uint64_t start = rdtsc_pre();
+    Solver solver;
 
     if (argc != 2) {
         return -1;
@@ -175,15 +206,22 @@ int main(int argc, char* argv[]) {
             solver.nVars() < max_var;
             solver.newVar())
         ; /* PASS */
+    cerr << "Preparation and parsing: " << rdtsc_post() - start << endl;
 
+    start = rdtsc_pre();
     generateCNF(solver);
+    cerr << "Generation of cnf: " << rdtsc_post() - start << endl;
 
-    solver.eliminate(true);         /* Performance test later */
-    vec<Lit> dummy;
-    lbool result = l_Undef;
-    result = solver.solveLimited(dummy);
+    start = rdtsc_pre();
+    /* TODO check if simplifying is worth it */
+    if (!solver.simplify()) {
+        cout << "s UNSATISFIABLE" << endl;
+        exit(20);
+    }
+    bool result = solver.solve();
+    cerr << "Call of minisat: " << rdtsc_post() - start << endl;
 
-    if (result == l_True) {
+    if (result == true) {
         cout << "s SATISFIABLE" << endl << "v ";
         for (int i = 0; i < solver.nVars(); i++) {
             if (solver.model[i] == l_True && std::get<0>(decode(i + 1)) != 1) {
@@ -192,7 +230,7 @@ int main(int argc, char* argv[]) {
         }
         cout << "1" << endl;
         exit(10);
-    } else if (result == l_False) {
+    } else if (result == false) {
         cout << "s UNSATISFIABLE" << endl;
         exit(20);
     }
