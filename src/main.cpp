@@ -120,8 +120,8 @@ void generateCNF(Solver &solver) {
     one_clause.push(mkLit(encode(1, num_nodes)));
     solver.addClause_(one_clause);
     one_clause.clear();
-    for (int i = 2; i <= num_nodes; i++) {
-        for (int j = 1; j < num_nodes; j++) {
+    for (register int i = 2; i <= num_nodes; i++) {
+        for (register int j = 1; j < num_nodes; j++) {
             n_clause.push(mkLit(encode(i, j)));
         }
         solver.addClause_(n_clause);
@@ -129,14 +129,14 @@ void generateCNF(Solver &solver) {
     }
 
     /* Visit each node at most once */
-    for (int i = 1; i < num_nodes; i++) {
+    for (register int i = 1; i < num_nodes; i++) {
         one_clause.push(~mkLit(encode(1, i)));
         solver.addClause_(one_clause);
         one_clause.clear();
     }
-    for (int i = 2; i <= num_nodes; i++) {
-        for (int j = 1; j < num_nodes - 1; j++) {
-            for (int k = j + 1; k < num_nodes; k++) {
+    for (register int i = 2; i <= num_nodes; i++) {
+        for (register int j = 1; j < num_nodes - 1; j++) {
+            for (register int k = j + 1; k < num_nodes; k++) {
                 two_clause.push(~mkLit(encode(i, j)));
                 two_clause.push(~mkLit(encode(i, k)));
                 solver.addClause_(two_clause);
@@ -146,8 +146,8 @@ void generateCNF(Solver &solver) {
     }
 
     /* Visit at least one node at each step */
-    for (int i = 1; i < num_nodes; i++) {
-        for (int j = 2; j <= num_nodes; j++) {
+    for (register int i = 1; i < num_nodes; i++) {
+        for (register int j = 2; j <= num_nodes; j++) {
             n_clause.push(mkLit(encode(j, i)));
         }
         solver.addClause_(n_clause);
@@ -155,7 +155,7 @@ void generateCNF(Solver &solver) {
     }
 
     /* Visit at most one node at each step */
-    for (int i = 2; i <= num_nodes; i++) {
+    for (register int i = 2; i <= num_nodes; i++) {
         one_clause.push(~mkLit(encode(i, 0)));
         solver.addClause_(one_clause);
         one_clause.clear();
@@ -163,9 +163,9 @@ void generateCNF(Solver &solver) {
         solver.addClause_(one_clause);
         one_clause.clear();
     }
-    for (int i = 1; i < num_nodes; i++) {
-        for (int j = 2; j < num_nodes; j++) {
-            for (int k = j + 1; k <= num_nodes; k++) {
+    for (register int i = 1; i < num_nodes; i++) {
+        for (register int j = 2; j < num_nodes; j++) {
+            for (register int k = j + 1; k <= num_nodes; k++) {
                 two_clause.push(~mkLit(encode(j, i)));
                 two_clause.push(~mkLit(encode(k, i)));
                 solver.addClause_(two_clause);
@@ -175,10 +175,10 @@ void generateCNF(Solver &solver) {
     }
 
     /* Successors of each node at each step depending on edges */
-    for (int i = 1; i <= num_nodes; i++) {
-        for (int j = 0; j < num_nodes; j++) {
+    for (register int i = 1; i <= num_nodes; i++) {
+        for (register int j = 0; j < num_nodes; j++) {
             n_clause.push(~mkLit(encode(i, j)));
-            for (int k = 0; k < edges[i - 1].size(); k++) {
+            for (register int k = 0; k < edges[i - 1].size(); k++) {
                 n_clause.push(mkLit(encode(edges[i - 1][k], j + 1)));
             }
             solver.addClause_(n_clause);
@@ -202,7 +202,7 @@ int main(int argc, char* argv[]) {
     }
 
     /* Pass the number of variables to minisat */
-    for (int max_var = encode(num_nodes, num_nodes) + 1;
+    for (register int max_var = encode(num_nodes, num_nodes) + 1;
             solver.nVars() < max_var;
             solver.newVar())
         ; /* PASS */
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
 
     if (result == true) {
         cout << "s SATISFIABLE" << endl << "v ";
-        for (int i = 0; i < solver.nVars(); i++) {
+        for (register int i = 0; i < solver.nVars(); i++) {
             if (solver.model[i] == l_True && std::get<0>(decode(i + 1)) != 1) {
                 cout << std::get<0>(decode(i + 1)) << " ";
             }
