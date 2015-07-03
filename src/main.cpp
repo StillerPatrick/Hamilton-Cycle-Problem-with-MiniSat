@@ -7,6 +7,7 @@
 #include <utility>
 #include <limits>
 #include <sstream>
+#include <map>
 #include "minisat/core/SolverTypes.h"
 #include "minisat/core/Solver.h"
 
@@ -19,6 +20,8 @@ enum {
 };
 
 vector<vector<int>> edges;
+map<int, int> file_to_vars;
+map<int, int> vars_to_file;
 unsigned int num_nodes = 0;
 unsigned int num_edges = 0;
 constexpr size_t max_bits = sizeof(int) * 8; // bits in int
@@ -44,7 +47,19 @@ void parseEdge(string const &edge_line) {
     edge.ignore();      /* ignore leading 'e' */
     edge >> skipws >> source;
     edge >> skipws >> destination;
-    edges[source - 1].push_back(destination);
+    if (file_to_vars.count(source) == 0) {
+        file_to_vars.insert(pair<int, int>(source, file_to_vars.size() + 1));
+        vars_to_file.insert(pair<int, int>(vars_to_file.size() + 1, source));
+    }
+    if (file_to_vars.count(destination) == 0) {
+        file_to_vars.insert(pair<int, int>(destination, file_to_vars.size() + 1));
+        vars_to_file.insert(pair<int, int>(vars_to_file.size() + 1, destination));
+    }
+    if (file_to_vars.at(source) > num_nodes) {
+        edges.insert(edges.end(), file_to_vars.at(source) - num_nodes, vector<int>());
+        num_nodes = file_to_vars.at(source);
+    }
+    edges[file_to_vars.at(source) - 1].push_back(file_to_vars.at(destination));
 }
 
 void parseDIMACSGraph(char *path) {
@@ -64,6 +79,14 @@ void parseDIMACSGraph(char *path) {
         }
 	}
 	file.close();
+    if (file_to_vars.size() != num_nodes) {
+        num_nodes = file_to_vars.size();
+    }
+#if 0
+    for (int i = 1; i <= num_nodes; i++) {
+        cerr << "Variable: " << i << ", node: " << vars_to_file.at(i) << endl;
+    }
+#endif
 }
 
 /* encodes a node and a time value to a MiniSAT Value */
@@ -188,10 +211,10 @@ int main(int argc, char* argv[]) {
         cout << "s SATISFIABLE" << endl << "v ";
         for (register int i = 0; i < solver.nVars(); i++) {
             if (solver.model[i] == l_True && std::get<0>(decode(i + 1)) != 1) {
-                cout << std::get<0>(decode(i + 1)) << " ";
+                cout << vars_to_file.at(std::get<0>(decode(i + 1))) << " ";
             }
         }
-        cout << "1" << endl;
+        cout << vars_to_file.at(1) << endl;
         exit(10);
     } else if (result == false) {
         cout << "s UNSATISFIABLE" << endl;
