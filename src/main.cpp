@@ -24,36 +24,6 @@ unsigned int num_edges = 0;
 constexpr size_t max_bits = sizeof(int) * 8; // bits in int
 size_t num_bits = 0; // (max bit size of node value) + 1
 
-/* FUNCTIONS TO MEASURE PERFORMANCE */
-
-uint64_t rdtsc_pre() {
-    uint64_t hi, lo;
-    asm volatile(
-            "cpuid; rdtsc;"
-            "mov %%rdx, %0;"
-            "mov %%rax, %1;"
-            : "=r"(hi), "=r"(lo)
-            :
-            : "rax", "rbx", "rcx", "rdx");
-    return (hi << 32) | lo;
-}
-
-uint64_t rdtsc_post() {
-    uint64_t hi, lo;
-    asm volatile(
-            "rdtscp;"
-            "mov %%rdx, %0;"
-            "mov %%rax, %1;"
-            "cpuid;"
-            : "=r"(hi), "=r"(lo)
-            :
-            : "rax", "rbx", "rcx", "rdx");
-    return (hi << 32) | lo;
-}
-
-
-/* ACTUAL HELPER FUNCTIONS */
-
 string parseProperties(string const &property_line) {
     istringstream properties(property_line);
     properties.ignore(7);     /* ignore "p edges" */
@@ -188,7 +158,6 @@ void generateCNF(Solver &solver) {
 }
 
 int main(int argc, char* argv[]) {
-    uint64_t start = rdtsc_pre();
     Solver solver;
 
     if (argc != 2) {
@@ -206,21 +175,14 @@ int main(int argc, char* argv[]) {
             solver.nVars() < max_var;
             solver.newVar())
         ; /* PASS */
-    cerr << "Preparation and parsing: " << rdtsc_post() - start << endl;
 
-    start = rdtsc_pre();
     generateCNF(solver);
-    cerr << "Generation of cnf: " << rdtsc_post() - start << endl;
 
-    start = rdtsc_pre();
-    /* TODO check if simplifying is worth it */
     if (!solver.simplify()) {
-        cerr << "Call of minisat: " << rdtsc_post() - start << endl;
         cout << "s UNSATISFIABLE" << endl;
         exit(20);
     }
     bool result = solver.solve();
-    cerr << "Call of minisat: " << rdtsc_post() - start << endl;
 
     if (result == true) {
         cout << "s SATISFIABLE" << endl << "v ";
