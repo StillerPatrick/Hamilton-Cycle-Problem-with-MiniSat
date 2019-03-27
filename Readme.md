@@ -1,4 +1,4 @@
-#Hamilton-Kreis
+# Hamilton-Kreis
 
 1. $ git clone "https://github.com/niklasso/minisat"
 2. $ cd minisat
